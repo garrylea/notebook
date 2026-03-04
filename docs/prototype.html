@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能便签原型展示</title>
+  <style>
+    :root {
+      --bg-color: #F4F5F7;
+      --sidebar-bg: #FFFFFF;
+      --text-main: #333333;
+      --text-secondary: #777777;
+      --primary-color: #4F46E5;
+      
+      --color-red: #FEF2F2;
+      --color-red-border: #FCA5A5;
+      --text-red: #B91C1C;
+      
+      --color-orange: #FFF7ED;
+      --color-orange-border: #FDBA74;
+      --text-orange: #C2410C;
+      
+      --color-blue: #EFF6FF;
+      --color-blue-border: #93C5FD;
+      --text-blue: #1D4ED8;
+      
+      --color-green: #F0FDF4;
+      --color-green-border: #86EFAC;
+      --text-green: #15803D;
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Roboto', 'PingFang SC', sans-serif; background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* Layout */
+    .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid #E5E7EB; flex-shrink: 0; display: flex; flex-direction: column; }
+    .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { height: 64px; background: var(--sidebar-bg); border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+    .content-area { flex: 1; padding: 24px; overflow-y: auto; }
+
+    /* Sidebar Items */
+    .user-profile { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #E5E7EB; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: #D1D5DB; }
+    .btn-create { margin: 20px; background: var(--primary-color); color: white; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--shadow-sm); transition: 0.2s; }
+    .btn-create:hover { background: #4338CA; }
+    .nav-group { padding: 10px 0; }
+    .nav-title { padding: 0 20px 8px; font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+    .nav-item { padding: 10px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--text-secondary); transition: 0.2s; }
+    .nav-item:hover { background: #F3F4F6; color: var(--text-main); }
+    .nav-item.active { background: #EEF2FF; color: var(--primary-color); border-right: 3px solid var(--primary-color); font-weight: 500; }
+    .badge { margin-left: auto; background: #E5E7EB; font-size: 12px; padding: 2px 8px; border-radius: 99px; }
+    .spacer { flex: 1; }
+
+    /* Topbar Items */
+    .view-title { font-size: 20px; font-weight: 600; }
+    .search-box { display: flex; align-items: center; background: #F3F4F6; padding: 8px 16px; border-radius: 99px; width: 300px; }
+    .search-box input { border: none; background: transparent; outline: none; margin-left: 8px; width: 100%; }
+    .filters { display: flex; gap: 12px; }
+
+    /* Content Area */
+    .masonry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; align-items: start; }
+    .note-card { background: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border-left: 4px solid transparent; }
+    .note-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    
+    .note-card.red { background: var(--color-red); border-left-color: var(--color-red-border); }
+    .note-card.orange { background: var(--color-orange); border-left-color: var(--color-orange-border); }
+    .note-card.blue { background: var(--color-blue); border-left-color: var(--color-blue-border); }
+    
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px; font-weight: 600; }
+    .tag-urgent { color: var(--text-red); }
+    .tag-important { color: var(--text-orange); }
+    .tag-draft { color: var(--text-blue); }
+    .card-date { color: var(--text-secondary); }
+    
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+    .card-summary { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+    
+    .card-progress { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+    .progress-bar { flex: 1; height: 6px; background: #E5E7EB; border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary-color); width: 33%; }
+    
+    .card-actions { display: flex; gap: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.05); }
+    .action-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 14px; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
+    .action-btn:hover { color: var(--text-main); }
+    .action-btn:hover.done { color: var(--text-green); }
+
+    .load-more { text-align: center; margin-top: 32px; padding: 20px; color: var(--text-secondary); cursor: pointer; }
+    .load-more:hover { color: var(--primary-color); }
+
+    /* Drawer */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 40; }
+    .drawer { position: fixed; right: -500px; top: 0; bottom: 0; width: 450px; background: white; box-shadow: var(--shadow-lg); transition: 0.3s; z-index: 50; display: flex; flex-direction: column; }
+    
+    body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
+    body.drawer-open .drawer { right: 0; }
+
+    .drawer-header { padding: 16px 24px; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center; }
+    .drawer-header button { border: none; background: none; cursor: pointer; padding: 8px; font-size: 16px; border-radius: 6px; }
+    .drawer-header button.save { background: var(--primary-color); color: white; padding: 8px 16px; font-weight: 500; }
+    .drawer-content { padding: 24px; flex: 1; overflow-y: auto; }
+    
+    .color-picker { display: flex; gap: 12px; margin-bottom: 24px; }
+    .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+    .color-dot.red { background: var(--color-red-border); border-color: var(--text-red); }
+    .color-dot.orange { background: var(--color-orange-border); }
+    .color-dot.blue { background: var(--color-blue-border); }
+    .color-dot.green { background: var(--color-green-border); }
+
+    .input-title { width: 100%; border: none; font-size: 24px; font-weight: 600; outline: none; margin-bottom: 16px; color: var(--text-main); }
+    .input-date { padding: 8px 12px; border: 1px solid #E5E7EB; border-radius: 6px; margin-bottom: 24px; color: var(--text-secondary); outline: none; cursor: pointer;}
+    .input-body { width: 100%; min-height: 150px; border: none; outline: none; resize: vertical; font-family: inherit; font-size: 15px; color: var(--text-main); line-height: 1.6; }
+
+    /* Icons */
+    .icon { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+  <!-- 左侧边栏 -->
+  <aside class="sidebar">
+    <div class="user-profile">
+      <div class="avatar"></div>
+      <div>
+        <div style="font-weight: 600; font-size: 14px;">李超</div>
+        <div style="font-size: 12px; color: var(--text-secondary);">个人版用户</div>
+      </div>
+    </div>
+    
+    <button class="btn-create" onclick="openDrawer()">
+      <span>+</span> 快速新建
+    </button>
+    
+    <div class="nav-group">
+      <div class="nav-title">主导航</div>
+      <div class="nav-item active">
+        <span>📋</span> 主工作区
+      </div>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-title">次级导航</div>
+      <div class="nav-item">
+        <span>🕐</span> 历史记录
+      </div>
+      <div class="nav-item">
+        <span>⏸</span> 悬挂列表
+        <span class="badge">3</span>
+      </div>
+      <div class="nav-item">
+        <span>📅</span> 日历视图
+      </div>
+      <div class="nav-item">
+        <span>📊</span> 统计图表
+      </div>
+    </div>
+    
+    <div class="spacer"></div>
+    
+    <div class="nav-group" style="border-top: 1px solid #E5E7EB; padding-top: 16px; margin-bottom: 16px;">
+      <div class="nav-item">
+        <span>🗑️</span> 垃圾桶
+      </div>
+      <div class="nav-item">
+        <span>⚙️</span> 系统设置
+      </div>
+    </div>
+  </aside>
+
+  <!-- 右侧区域 -->
+  <main class="main-container">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="view-title">主工作区</div>
+      
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="搜索便签...">
+      </div>
+      
+      <div class="filters">
+        <select style="border: 1px solid #E5E7EB; padding: 6px 12px; border-radius: 6px; outline: none; background: white;">
+          <option>默认排序 (优先级)</option>
+          <option>创建时间</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- 核心内容区 -->
+    <section class="content-area">
+      <div class="masonry-grid">
+        
+        <!-- 卡片A -->
+        <article class="note-card red" onclick="openDrawer()">
+          <div class="card-header">
+            <span class="tag-urgent">🔴 紧急</span>
+            <span class="card-date">截止：03-05</span>
+          </div>
+          <h3 class="card-title">准备 Q1 季度汇报 PPT</h3>
+          <p class="card-summary">1. 汇总运营数据<br>2. 更新市场分析图表...</p>
+          <div class="card-progress">
+            <span>子任务 1/3</span>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+          </div>
+          <div class="card-actions">
+            <button class="action-btn done" onclick="event.stopPropagation(); alert('已完成，移至历史记录')">✅ 完成</button>
+            <button class="action-btn" onclick="event.stopPropagation()">⏸ 挂起</button>
+            <button class="action-btn" onclick="event.stopPropagation()">🗑 删除</button>
+          </div>
+        </article>
+        
+        <!-- 卡片B -->
+        <article class="note-card orange" onclick="openDrawer()">
+          <div class="card-header">
+            <span class="tag-important">🟠 重要</span>
+          </div>
+          <h3 class="card-title">购买服务器资源</h3>
+          <p class="card-summary">对比云服务商报价，本周内走流程申请经费。</p>
+          <div style="height: 16px;"></div> <!-- spacer -->
+          <div class="card-actions">
+            <button class="action-btn done" onclick="event.stopPropagation()">✅ 完成</button>
+            <button class="action-btn" onclick="event.stopPropagation()">⏸ 挂起</button>
+            <button class="action-btn" onclick="event.stopPropagation()">🗑 删除</button>
+          </div>
+        </article>
+        
+        <!-- 卡片C -->
+        <article class="note-card blue" onclick="openDrawer()">
+          <div class="card-header">
+            <span class="tag-draft">🔵 草稿</span>
+          </div>
+          <h3 class="card-title">[草稿] 周报整理思路</h3>
+          <p class="card-summary">还没有想清楚具体重点写什么，先占个坑...</p>
+          <div style="height: 16px;"></div> <!-- spacer -->
+          <div class="card-actions">
+            <button class="action-btn done" onclick="event.stopPropagation()">✅ 完成</button>
+            <button class="action-btn" onclick="event.stopPropagation()">⏸ 挂起</button>
+            <button class="action-btn" onclick="event.stopPropagation()">🗑 删除</button>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="load-more">
+        ▼ 展开更多（还有 7 条）
+      </div>
+    </section>
+  </main>
+
+  <!-- 右侧抽屉 -->
+  <div class="drawer-overlay" onclick="closeDrawer()"></div>
+  <aside class="drawer">
+    <div class="drawer-header">
+      <select style="border:1px solid #E5E7EB; border-radius:6px; padding:4px 8px; outline:none;">
+        <option>进行中</option>
+        <option>挂起</option>
+      </select>
+      <div>
+        <button onclick="closeDrawer()" style="color:var(--text-secondary)">✕ 取消</button>
+        <button class="save" onclick="closeDrawer()">保存</button>
+      </div>
+    </div>
+    
+    <div class="drawer-content">
+      <!-- 颜色选择器 -->
+      <div class="color-picker">
+        <div class="color-dot red"></div>
+        <div class="color-dot orange"></div>
+        <div class="color-dot blue"></div>
+        <div class="color-dot green"></div>
+      </div>
+      
+      <!-- 标题 -->
+      <input type="text" class="input-title" placeholder="准备做什么？" value="准备 Q1 季度汇报 PPT">
+      
+      <!-- 截止日期 -->
+      <input type="date" class="input-date" value="2026-03-05">
+      
+      <!-- 正文 -->
+      <textarea class="input-body" placeholder="添加详细描述（支持 Markdown）...">1. 汇总运营数据
+2. 更新市场分析图表
+需要向财务部门要最后一份数据表。</textarea>
+
+      <!-- 子任务区域 模拟 -->
+      <div style="margin-top: 24px; border-top: 1px solid #E5E7EB; padding-top: 16px;">
+        <div style="font-weight: 600; margin-bottom: 12px; font-size: 14px;">子任务 (1/3)</div>
+        
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; color:var(--text-secondary);">
+          <input type="checkbox" checked> <span style="text-decoration: line-through;">收集各组素材</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <input type="checkbox"> <span>绘制数据走势图</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; padding-left: 24px;">
+          <input type="checkbox"> <span style="color:var(--text-secondary); font-size:13px;">导出高清图片</span>
+        </div>
+        
+        <button style="background:none; border:none; color:var(--primary-color); cursor:pointer; font-weight:500; margin-top:8px;">+ 添加子任务</button>
+      </div>
+      
+      <!-- 附件区域 模拟 -->
+      <div style="margin-top: 24px; border-top: 1px solid #E5E7EB; padding-top: 16px;">
+        <div style="font-weight: 600; margin-bottom: 12px; font-size: 14px;">附件</div>
+        <div style="border: 2px dashed #E5E7EB; border-radius: 8px; padding: 24px; text-align: center; color: var(--text-secondary); cursor: pointer;">
+          点击或拖拽文件到此处上传
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+
+  <script>
+    function openDrawer() {
+      document.body.classList.add('drawer-open');
+    }
+    
+    function closeDrawer() {
+      // 真实情况下这里会有未保存判断提示
+      document.body.classList.remove('drawer-open');
+    }
+  </script>
+</body>
+</html>

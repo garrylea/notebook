@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  username      String    @unique @db.VarChar(50)
+  email         String?   @unique @db.VarChar(100)
+  password_hash String    @db.VarChar(255)
+  avatar_url    String?   @db.VarChar(255)
+  preferences   Json?
+  status        Int       @default(1) @db.SmallInt // 1-正常, 0-禁用
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  is_deleted    Int       @default(0) @db.SmallInt // 0-未删除, 1-已删除
+
+  notes         Note[]
+  activityLogs  ActivityLog[]
+
+  @@map("sys_user")
+}
+
+model Note {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  userId     String    @map("user_id") @db.VarChar(36)
+  title      String    @db.VarChar(100)
+  content    String?   @db.Text
+  color      String    @default("blue") @db.VarChar(20)
+  status     String    @default("todo") @db.VarChar(20)
+  due_date   DateTime?
+  pin_top    Int       @default(0) @db.SmallInt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  is_deleted Int       @default(0) @db.SmallInt
+
+  user       User          @relation(fields: [userId], references: [id])
+  subtasks   Subtask[]
+  attachments Attachment[]
+  logs       ActivityLog[]
+
+  @@index([userId, is_deleted, created_at], map: "idx_user_created")
+  @@index([userId, is_deleted, due_date], map: "idx_user_due")
+  @@map("busi_note")
+}
+
+model Subtask {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  noteId       String    @map("note_id") @db.VarChar(36)
+  parentId     String?   @map("parent_id") @db.VarChar(36)
+  title        String    @db.VarChar(200)
+  is_completed Int       @default(0) @db.SmallInt
+  sort_order   Int       @default(0)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  note         Note      @relation(fields: [noteId], references: [id])
+  parent       Subtask?  @relation("SubtaskToSubtask", fields: [parentId], references: [id])
+  children     Subtask[] @relation("SubtaskToSubtask")
+
+  @@index([noteId])
+  @@index([parentId])
+  @@map("busi_subtask")
+}
+
+model Attachment {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  noteId     String    @map("note_id") @db.VarChar(36)
+  file_name  String    @db.VarChar(255)
+  file_size  BigInt
+  file_type  String    @db.VarChar(50)
+  file_path  String    @db.VarChar(500)
+  md5_hash   String?   @db.VarChar(32)
+  created_at DateTime  @default(now())
+  is_deleted Int       @default(0) @db.SmallInt
+
+  note       Note      @relation(fields: [noteId], references: [id])
+
+  @@index([noteId])
+  @@index([md5_hash])
+  @@map("busi_attachment")
+}
+
+model ActivityLog {
+  id          BigInt    @id @default(autoincrement())
+  noteId      String    @map("note_id") @db.VarChar(36)
+  operatorId  String    @map("operator_id") @db.VarChar(36)
+  action_type String    @db.VarChar(50)
+  detail      Json?
+  created_at  DateTime  @default(now())
+
+  note        Note      @relation(fields: [noteId], references: [id])
+  operator    User      @relation(fields: [operatorId], references: [id])
+
+  @@index([noteId])
+  @@index([created_at])
+  @@map("sys_activity_log")
+}
