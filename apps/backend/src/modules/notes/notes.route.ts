@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { createNote, getNotes, getNoteById, updateNoteStatus, deleteNote } from './notes.controller';
+import { createNote, getNotes, getNoteById, updateNote, updateNoteStatus, restoreNote, deleteNote } from './notes.controller';
 
 const noteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastify.addHook('onRequest', fastify.authenticate);
@@ -7,7 +7,9 @@ const noteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastify.post('/', createNote);
     fastify.get('/', getNotes);
     fastify.get('/:id', getNoteById);
+    fastify.put('/:id', updateNote);
     fastify.patch('/:id/status', updateNoteStatus);
+    fastify.post('/:id/restore', restoreNote);
     fastify.delete('/:id', deleteNote);
 };
 

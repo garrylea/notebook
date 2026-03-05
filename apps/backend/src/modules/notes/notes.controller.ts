@@ -89,10 +89,12 @@ export const getNoteById = async (request: FastifyRequest<{ Params: { id: string
         include: {
             subtasks: {
                 where: { parent_id: null }, // Fetch root level
+                orderBy: { sort_order: 'asc' },
                 include: {
                     children: {
+                        orderBy: { sort_order: 'asc' },
                         include: {
-                            children: true // Up to 3 levels embedded
+                            children: { orderBy: { sort_order: 'asc' } } // Up to 3 levels
                         }
                     }
                 }
@@ -100,7 +102,6 @@ export const getNoteById = async (request: FastifyRequest<{ Params: { id: string
             attachments: {
                 where: { is_deleted: 0 }
             },
-            collaborators: true, // simplified relation display
             activityLogs: {
                 orderBy: { created_at: 'desc' },
                 take: 10
@@ -162,6 +163,48 @@ export const updateNoteStatus = async (request: FastifyRequest<{ Params: { id: s
     });
 
     return reply.success(result, 'Status updated');
+};
+
+export const updateNote = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    const { id } = request.params;
+    const userId = request.user.id;
+    const { title, color, content, due_date, priority, tags } = request.body as any;
+
+    const check = await prisma.note.findUnique({ where: { id } });
+    if (!check || check.userId !== userId) {
+        return reply.error('Note not found', 404);
+    }
+
+    const updated = await prisma.note.update({
+        where: { id },
+        data: {
+            title,
+            color,
+            content,
+            priority,
+            tags: tags || [],
+            due_date: due_date ? new Date(due_date) : null,
+        }
+    });
+
+    return reply.success(updated);
+};
+
+export const restoreNote = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    const { id } = request.params;
+    const userId = request.user.id;
+
+    const check = await prisma.note.findUnique({ where: { id } });
+    if (!check || check.userId !== userId) {
+        return reply.error('Note not found', 404);
+    }
+
+    await prisma.note.update({
+        where: { id },
+        data: { is_deleted: 0, status: 'in_progress' }
+    });
+
+    return reply.success(null, 'Note restored to workspace');
 };
 
 export const deleteNote = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
