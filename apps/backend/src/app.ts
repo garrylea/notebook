@@ -7,6 +7,7 @@ import errorHandlerPlugin from './plugins/errorHandler';
 import authPlugin from './plugins/auth';
 import authRoutes from './modules/auth/auth.route';
 import attachmentRoutes from './modules/attachments/attachments.route';
+import noteRoutes from './modules/notes/notes.route';
 
 export function buildApp(opts = {}) {
     const app = Fastify({
@@ -40,6 +41,7 @@ export function buildApp(opts = {}) {
 
     // Register API Routes
     app.register(authRoutes, { prefix: '/api/v1/auth' });
+    app.register(noteRoutes, { prefix: '/api/v1/notes' });
     app.register(attachmentRoutes, { prefix: '/api/v1/notes/:noteId/attachments' });
 
     // Health check endpoint
