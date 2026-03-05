@@ -1,29 +1,27 @@
-import { Outlet } from 'react-router-dom';
-import { ConfigProvider, App as AntApp, theme } from 'antd';
-import { useAppStore } from './store';
-import './App.css';
+import React from 'react';
+import { ConfigProvider, theme } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 
-function App() {
-  const currentTheme = useAppStore((state) => state.theme);
+interface Props {
+  children: React.ReactNode;
+}
 
+const App: React.FC<Props> = ({ children }) => {
   return (
     <ConfigProvider
+      locale={zhCN}
       theme={{
-        algorithm:
-          currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          colorPrimary: '#4F46E5', // Set to our primary brand color
-          borderRadius: 8
-        }
+          colorPrimary: '#6366f1',
+          borderRadius: 10,
+          fontFamily: "'Inter', 'PingFang SC', -apple-system, sans-serif",
+        },
+        algorithm: theme.defaultAlgorithm,
       }}
     >
-      <AntApp>
-        <div className="app-container">
-          <Outlet /> {/* Renders child routes here */}
-        </div>
-      </AntApp>
+      {children}
     </ConfigProvider>
   );
-}
+};
 
 export default App;

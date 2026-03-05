@@ -1,30 +1,26 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import App from '../App';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import Login from '../pages/Auth/Login';
+import Dashboard from '../pages/Dashboard/Dashboard';
 
-// For MVP we just stub out basic routes
-// We will replace these with real pages later.
+// Route guard: If no access token, redirect to login
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return <Navigate to="/login" replace />;
+    return <>{children}</>;
+};
+
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <App />,
-        children: [
-            {
-                path: '',
-                element: <div>Dashboard / Board View</div>
-            },
-            {
-                path: 'history',
-                element: <div>History View</div>
-            },
-            {
-                path: 'calendar',
-                element: <div>Calendar View</div>
-            }
-        ]
+        element: <RequireAuth><Dashboard /></RequireAuth>,
     },
     {
         path: '/login',
-        element: <div>Login Page</div>
+        element: <Login />,
+    },
+    {
+        path: '/register',
+        element: <Login />, // Reuse login layout for now, will add register page
     }
 ]);
 
