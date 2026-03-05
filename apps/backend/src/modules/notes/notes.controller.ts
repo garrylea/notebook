@@ -113,16 +113,7 @@ export const getNoteById = async (request: FastifyRequest<{ Params: { id: string
         return reply.error('Note not found', 404);
     }
 
-    // Convert file_size BigInt to number for JSON responses
-    const serializedAttachments = note.attachments.map(att => ({
-        ...att,
-        file_size: Number(att.file_size)
-    }));
-
-    return reply.success({
-        ...note,
-        attachments: serializedAttachments
-    });
+    return reply.success(note);
 };
 
 export const updateNoteStatus = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {

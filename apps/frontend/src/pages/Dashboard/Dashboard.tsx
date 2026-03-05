@@ -25,8 +25,8 @@ const SECTION_ITEMS = [
     { key: 'active', icon: <AppstoreOutlined />, label: '主工作区' },
     { key: 'history', icon: <HistoryOutlined />, label: '历史记录' },
     { key: 'suspended', icon: <PauseCircleOutlined />, label: '悬挂列表' },
-    { key: 'calendar', icon: <CalendarOutlined />, label: '日历视图', disabled: true },
-    { key: 'stats', icon: <BarChartOutlined />, label: '统计图表', disabled: true },
+    { key: 'calendar', icon: <CalendarOutlined />, label: '日历视图' },
+    { key: 'stats', icon: <BarChartOutlined />, label: '统计图表' },
     { key: 'deleted', icon: <DeleteOutlined />, label: '回收站', danger: true },
 ];
 
@@ -55,7 +55,8 @@ const Dashboard: React.FC = () => {
     }, []);
 
     const handleSectionChange = ({ key }: { key: string }) => {
-        if (['calendar', 'stats'].includes(key)) return;
+        if (key === 'calendar') { navigate('/calendar'); return; }
+        if (key === 'stats') { navigate('/stats'); return; }
         setActiveSection(key as any);
     };
 

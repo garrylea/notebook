@@ -9,6 +9,7 @@ import authRoutes from './modules/auth/auth.route';
 import attachmentRoutes from './modules/attachments/attachments.route';
 import noteRoutes from './modules/notes/notes.route';
 import subtaskRoutes from './modules/subtasks/subtasks.route';
+import statsRoutes from './modules/stats/stats.route';
 
 export function buildApp(opts = {}) {
     const app = Fastify({
@@ -45,6 +46,7 @@ export function buildApp(opts = {}) {
     app.register(noteRoutes, { prefix: '/api/v1/notes' });
     app.register(attachmentRoutes, { prefix: '/api/v1/notes/:noteId/attachments' });
     app.register(subtaskRoutes, { prefix: '/api/v1/notes/:noteId/subtasks' });
+    app.register(statsRoutes, { prefix: '/api/v1/stats' });
 
     // Health check endpoint
     app.get('/api/health', async (request, reply) => {
