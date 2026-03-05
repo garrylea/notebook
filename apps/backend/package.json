@@ -14,7 +14,9 @@
         "coverage": "vitest run --coverage"
     },
     "dependencies": {
+        "@fastify/cookie": "^9.3.1",
         "@fastify/cors": "^8.5.0",
+        "@fastify/multipart": "^9.4.0",
         "@fastify/websocket": "^8.3.0",
         "@prisma/client": "^5.10.2",
         "bcrypt": "^5.1.1",
@@ -31,6 +33,7 @@
         "prisma": "^5.10.2",
         "tsx": "^4.7.1",
         "typescript": "^5.3.3",
-        "vitest": "^4.0.18"
+        "vitest": "^4.0.18",
+        "vitest-mock-extended": "^3.1.0"
     }
 }
