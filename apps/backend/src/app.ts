@@ -1,9 +1,12 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
+import multipart from '@fastify/multipart';
 import responsePlugin from './plugins/response';
 import errorHandlerPlugin from './plugins/errorHandler';
+import authPlugin from './plugins/auth';
 import authRoutes from './modules/auth/auth.route';
+import attachmentRoutes from './modules/attachments/attachments.route';
 
 export function buildApp(opts = {}) {
     const app = Fastify({
@@ -26,10 +29,18 @@ export function buildApp(opts = {}) {
 
     // Register Plugins
     app.register(cookie);
+    app.register(multipart, {
+        limits: {
+            fileSize: 100 * 1024 * 1024, // 100MB limit for max upload chunk or total size
+        }
+    });
     app.register(responsePlugin);
     app.register(errorHandlerPlugin);
+    app.register(authPlugin);
 
+    // Register API Routes
     app.register(authRoutes, { prefix: '/api/v1/auth' });
+    app.register(attachmentRoutes, { prefix: '/api/v1/notes/:noteId/attachments' });
 
     // Health check endpoint
     app.get('/api/health', async (request, reply) => {
