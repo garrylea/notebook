@@ -15,7 +15,7 @@ export const createNote = async (request: FastifyRequest, reply: FastifyReply) =
             color,
             due_date: due_date ? new Date(due_date) : null,
             content: content || '',
-            tags: tags,
+            tags: tags ? JSON.stringify(tags) : null,
             priority: priority || 'medium',
             userId: userId,
             status: 'in_progress'
@@ -146,7 +146,7 @@ export const updateNoteStatus = async (request: FastifyRequest<{ Params: { id: s
                 noteId: id,
                 userId: userId,
                 action_type: 'UPDATE_STATUS',
-                detail: { from: previousStatus, to: status, remark }
+                detail: JSON.stringify({ from: previousStatus, to: status, remark })
             }
         });
 
@@ -173,7 +173,7 @@ export const updateNote = async (request: FastifyRequest<{ Params: { id: string 
             color,
             content,
             priority,
-            tags: tags || [],
+            tags: tags !== undefined ? JSON.stringify(tags) : undefined,
             due_date: due_date ? new Date(due_date) : null,
         }
     });

@@ -79,7 +79,12 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
         return reply.error('Invalid credentials or account disabled', 401);
     }
 
-    const validPassword = await bcrypt.compare(password, user.password_hash);
+    let validPassword = false;
+    try {
+        validPassword = await bcrypt.compare(password, user.password_hash);
+    } catch {
+        return reply.error('Invalid credentials', 401);
+    }
     if (!validPassword) {
         return reply.error('Invalid credentials', 401);
     }
