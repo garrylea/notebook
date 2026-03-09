@@ -25,7 +25,7 @@ export const useNoteStore = create<NoteState>()((set, get) => ({
     page: 1,
     hasMore: true,
     activeSection: 'active',
-    filters: { limit: 10, sort_by: 'priority_desc,created_at_desc' },
+    filters: { status: 'active', limit: 10, sort_by: 'priority_desc,created_at_desc' },
 
     setFilters: (filters) => {
         set(s => ({ filters: { ...s.filters, ...filters } }));

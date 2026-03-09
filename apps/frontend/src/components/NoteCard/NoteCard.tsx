@@ -1,16 +1,21 @@
-import React, { useMemo } from 'react';
-import { Tag, Progress, Button, Tooltip } from 'antd';
-import { CheckOutlined, PauseCircleOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
+import React, { useMemo, useState } from 'react';
+import { Tag, Progress, Button, Tooltip, Modal } from 'antd';
+import { CheckOutlined, PauseCircleOutlined, DeleteOutlined, ReloadOutlined, PaperClipOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import type { Note } from '../../api/notes';
 
 interface NoteCardProps {
     note: Note;
     onClick: () => void;
+    onStart?: () => void;
     onComplete?: () => void;
     onSuspend?: () => void;
     onDelete?: () => void;
     onRestore?: () => void;
-    isHistory?: boolean;
 }
 
 const COLOR_MAP: Record<string, { bg: string; bar: string; tag: string }> = {
@@ -33,15 +38,19 @@ const PRIORITY_LABEL: Record<string, { label: string; color: string }> = {
 const NoteCard: React.FC<NoteCardProps> = ({
     note,
     onClick,
+    onStart,
     onComplete,
     onSuspend,
     onDelete,
     onRestore,
-    isHistory = false,
 }) => {
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
+    const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | 'pdf' | 'other'>('other');
+
     const palette = COLOR_MAP[note.color] || COLOR_MAP.blue;
     const priority = PRIORITY_LABEL[note.priority] || PRIORITY_LABEL.medium;
-    const isCompleted = note.status === 'completed' || note.status === 'archived';
+    const isCompleted = note.status === 'completed' || note.status === 'archived' || note.is_deleted === 1;
 
     const subtaskProgress = useMemo(() => {
         if (!note.subtask_total || note.subtask_total === 0) return null;
@@ -92,6 +101,12 @@ const NoteCard: React.FC<NoteCardProps> = ({
                 >
                     {priority.label}
                 </Tag>
+                {note.status === 'draft' && (
+                    <Tag color="default" style={{ border: 'none', borderRadius: 6, fontSize: 11 }}>待开始</Tag>
+                )}
+                {note.status === 'in_progress' && (
+                    <Tag color="cyan" style={{ border: 'none', borderRadius: 6, fontSize: 11 }}>进行中</Tag>
+                )}
                 {dueStr && (
                     <span style={{
                         fontSize: 12,
@@ -127,7 +142,82 @@ const NoteCard: React.FC<NoteCardProps> = ({
                     marginBottom: 10,
                     lineHeight: 1.5,
                 }}>
-                    {note.content}
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm, remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                        components={{
+                            p: ({ node, ...props }) => <span {...props} />, // Prevent block p tags breaking clamp
+                        }}
+                    >
+                        {note.content}
+                    </ReactMarkdown>
+                </div>
+            )}
+
+            {/* Attachment indicator */}
+            {note.has_attachments && note.attachments && note.attachments.length > 0 && (
+                <div
+                    onClick={e => e.stopPropagation()}
+                    style={{ marginBottom: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}
+                >
+                    {note.attachments.map(att => (
+                        <div
+                            key={att.id}
+                            onClick={() => {
+                                const url = att.file_path;
+                                if (!url) return;
+                                const ext = url.split('.').pop()?.toLowerCase() || '';
+                                let type: 'image' | 'video' | 'audio' | 'pdf' | 'other' = 'other';
+                                if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) type = 'image';
+                                else if (['mp4', 'webm', 'mov'].includes(ext)) type = 'video';
+                                else if (['mp3', 'wav', 'ogg'].includes(ext)) type = 'audio';
+                                else if (['pdf'].includes(ext)) type = 'pdf';
+
+                                if (type !== 'other') {
+                                    setPreviewType(type);
+                                    setPreviewImage(url);
+                                    setPreviewOpen(true);
+                                } else {
+                                    window.open(url, '_blank');
+                                }
+                            }}
+                            style={{
+                                fontSize: 11, color: '#1677ff', background: '#e6f4ff',
+                                padding: '2px 8px', borderRadius: 4, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: 4,
+                                maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <PaperClipOutlined />
+                            {att.file_name}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Subtasks Preview */}
+            {note.subtasks && note.subtasks.length > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                    {note.subtasks.slice(0, 3).map((st: any) => (
+                        <div key={st.id} style={{ display: 'flex', alignItems: 'center', fontSize: 12, color: '#555', gap: 6, marginBottom: 2 }}>
+                            <div style={{
+                                width: 12, height: 12, borderRadius: 2,
+                                border: `1px solid ${st.is_completed ? '#52c41a' : '#d9d9d9'}`,
+                                background: st.is_completed ? '#52c41a' : 'transparent',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                {st.is_completed && <CheckOutlined style={{ color: '#fff', fontSize: 8 }} />}
+                            </div>
+                            <span style={{ textDecoration: st.is_completed ? 'line-through' : 'none', color: st.is_completed ? '#aaa' : 'inherit', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {st.title}
+                            </span>
+                        </div>
+                    ))}
+                    {note.subtasks.length > 3 && (
+                        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                            + {note.subtasks.length - 3} 个子任务
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -164,20 +254,28 @@ const NoteCard: React.FC<NoteCardProps> = ({
                 onClick={e => e.stopPropagation()}
                 style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: 10 }}
             >
-                {isHistory ? (
-                    <Tooltip title="重新激活">
+                {note.status === 'completed' || note.status === 'suspended' || note.status === 'archived' || note.is_deleted === 1 ? (
+                    <Tooltip title="重新激活为待开始">
                         <Button size="small" icon={<ReloadOutlined />} onClick={onRestore} type="text" style={{ color: '#6366f1' }}>
-                            激活
+                            激活恢复
                         </Button>
                     </Tooltip>
                 ) : (
                     <>
-                        <Tooltip title="标记完成">
-                            <Button size="small" icon={<CheckOutlined />} onClick={onComplete} type="text" style={{ color: '#52c41a' }}>
-                                完成
-                            </Button>
-                        </Tooltip>
-                        <Tooltip title="挂起">
+                        {note.status === 'draft' ? (
+                            <Tooltip title="开始执行">
+                                <Button size="small" icon={<PlayCircleOutlined />} onClick={onStart} type="text" style={{ color: '#1677ff' }}>
+                                    开始
+                                </Button>
+                            </Tooltip>
+                        ) : (
+                            <Tooltip title="标记完成">
+                                <Button size="small" icon={<CheckOutlined />} onClick={onComplete} type="text" style={{ color: '#52c41a' }}>
+                                    完成
+                                </Button>
+                            </Tooltip>
+                        )}
+                        <Tooltip title="挂起此便签">
                             <Button size="small" icon={<PauseCircleOutlined />} onClick={onSuspend} type="text" style={{ color: '#fa8c16' }}>
                                 挂起
                             </Button>
@@ -190,6 +288,23 @@ const NoteCard: React.FC<NoteCardProps> = ({
                     </>
                 )}
             </div>
+
+            {/* Media Preview Modal */}
+            <Modal
+                open={previewOpen}
+                footer={null}
+                onCancel={(e) => { e.stopPropagation(); setPreviewOpen(false) }}
+                destroyOnHidden
+                width={previewType === 'pdf' ? '80%' : 520}
+                style={{ top: 20 }}
+            >
+                <div onClick={e => e.stopPropagation()}>
+                    {previewType === 'image' && <img alt="preview" style={{ width: '100%' }} src={previewImage} />}
+                    {previewType === 'video' && <video controls autoPlay style={{ width: '100%' }} src={previewImage} />}
+                    {previewType === 'audio' && <audio controls autoPlay style={{ width: '100%' }} src={previewImage} />}
+                    {previewType === 'pdf' && <iframe style={{ width: '100%', height: '80vh', border: 'none' }} src={previewImage} title="PDF Preview" />}
+                </div>
+            </Modal>
         </div>
     );
 };

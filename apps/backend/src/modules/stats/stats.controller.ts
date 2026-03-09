@@ -48,21 +48,24 @@ export const getTrend = async (request: FastifyRequest, reply: FastifyReply) => 
     const startDate = new Date(now);
     startDate.setDate(now.getDate() - days);
 
-    // Group completed notes by day using raw SQL (SQLite compatible)
-    const rows: any[] = await prisma.$queryRawUnsafe(`
+    // Group completed notes by day using Prisma raw SQL
+    const rows: any[] = await prisma.$queryRaw`
         SELECT DATE(completed_at) as date, COUNT(*) as count
         FROM busi_note
-        WHERE user_id = ?
+        WHERE user_id = ${userId}
           AND status = 'completed'
           AND is_deleted = 0
-          AND completed_at >= ?
-          AND completed_at <= ?
+          AND completed_at >= ${startDate}
+          AND completed_at <= ${now}
         GROUP BY DATE(completed_at)
         ORDER BY date ASC
-    `, userId, startDate.toISOString(), now.toISOString());
+    `;
 
     // Fill missing days with 0
-    const dateMap = new Map(rows.map(r => [r.date, Number(r.count)]));
+    const dateMap = new Map(rows.map(r => {
+        const dStr = r.date instanceof Date ? r.date.toISOString().slice(0, 10) : String(r.date).slice(0, 10);
+        return [dStr, Number(r.count)];
+    }));
     const series: { date: string; count: number }[] = [];
     for (let i = days; i >= 0; i--) {
         const d = new Date(now);
@@ -102,11 +105,14 @@ export const getCalendarNotes = async (request: FastifyRequest, reply: FastifyRe
     const where: any = {
         userId,
         is_deleted: 0,
-        due_date: { not: null }
     };
 
-    if (start) where.due_date = { ...where.due_date, gte: new Date(start) };
-    if (end) where.due_date = { ...where.due_date, lte: new Date(end + 'T23:59:59') };
+    if (start) {
+        where.created_at = { gte: new Date(start + 'T00:00:00.000Z') };
+    }
+    if (end) {
+        where.created_at = { ...where.created_at, lte: new Date(end + 'T23:59:59.999Z') };
+    }
 
     const notes = await prisma.note.findMany({
         where,
@@ -117,8 +123,9 @@ export const getCalendarNotes = async (request: FastifyRequest, reply: FastifyRe
             priority: true,
             status: true,
             due_date: true,
+            created_at: true,
         } as any,
-        orderBy: { due_date: 'asc' }
+        orderBy: { created_at: 'asc' }
     });
 
     return reply.success(notes);

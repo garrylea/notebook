@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -31,11 +31,12 @@ model Note {
   title        String
   content      String?
   color        String    @default("blue")
-  status       String    @default("in_progress")
+  status       String    @default("draft")
   priority     String    @default("medium")
   tags         String?   // JSON array stored as string
   due_date     DateTime?
   pin_top      Int       @default(0)
+  started_at   DateTime?
   completed_at DateTime?
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt

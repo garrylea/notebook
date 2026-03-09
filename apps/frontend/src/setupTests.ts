@@ -28,3 +28,11 @@ Object.defineProperty(window, 'matchMedia', {
         dispatchEvent: () => false,
     }),
 });
+
+// Mock ResizeObserver
+class ResizeObserver {
+    observe() { }
+    unobserve() { }
+    disconnect() { }
+}
+window.ResizeObserver = ResizeObserver;

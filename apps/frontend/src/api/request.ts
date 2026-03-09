@@ -27,7 +27,7 @@ request.interceptors.response.use(
     (response) => {
         const res = response.data;
         // Assume our standard response is { code: number, message: string, data: any }
-        if (res.code === 200) {
+        if (res.code === 200 || res.code === 201) {
             return res.data;
         } else {
             message.error(res.message || 'Request failed');
@@ -40,9 +40,10 @@ request.interceptors.response.use(
             // Logic to transparently refresh access token goes here
             // For now we'll just throw the error and let the app redirect to login
             message.error('Session expired, please log in again.');
-            // window.location.href = '/login';
+            window.location.href = '/login';
         } else {
-            message.error(error.message || 'Network error');
+            const backendMsg = error.response?.data?.message;
+            message.error(backendMsg || error.message || 'Network error');
         }
         return Promise.reject(error);
     }

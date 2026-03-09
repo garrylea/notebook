@@ -61,7 +61,9 @@ describe('Login Component', () => {
         });
 
         // Test redirect
-        expect(screen.getByTestId('dashboard')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByTestId('dashboard')).toBeInTheDocument();
+        });
     });
 
     it('should render error messages on failure', async () => {

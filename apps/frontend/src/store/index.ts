@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface AppState {
     theme: 'light' | 'dark';
@@ -7,9 +8,17 @@ interface AppState {
     setUser: (user: any) => void;
 }
 
-export const useAppStore = create<AppState>()((set) => ({
-    theme: 'light',
-    setTheme: (theme) => set({ theme }),
-    user: null,
-    setUser: (user) => set({ user }),
-}));
+export const useAppStore = create<AppState>()(
+    persist(
+        (set) => ({
+            theme: 'light',
+            setTheme: (theme) => set({ theme }),
+            user: null,
+            setUser: (user) => set({ user }),
+        }),
+        {
+            name: 'app-storage', // name of the item in the storage (must be unique)
+            partialize: (state) => ({ user: state.user, theme: state.theme }), // only save user and theme
+        }
+    )
+);

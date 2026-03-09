@@ -1,6 +1,29 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../../utils/prisma';
 
+const previewInclude = {
+    subtasks: {
+        where: { parent_id: null },
+        orderBy: { sort_order: 'asc' },
+        take: 4
+    },
+    attachments: {
+        where: { is_deleted: 0 },
+        take: 5
+    },
+    _count: {
+        select: { attachments: { where: { is_deleted: 0 } } }
+    }
+} as any;
+
+const formatNote = (note: any) => {
+    const formatted: any = { ...note, tags: note.tags ? JSON.parse(note.tags) : [] };
+    if (note._count !== undefined) {
+        formatted.has_attachments = note._count?.attachments > 0;
+    }
+    return formatted;
+};
+
 export const createNote = async (request: FastifyRequest, reply: FastifyReply) => {
     const { title, color, due_date, content, tags, priority } = request.body as any;
     const userId = request.user.id;
@@ -18,11 +41,12 @@ export const createNote = async (request: FastifyRequest, reply: FastifyReply) =
             tags: tags ? JSON.stringify(tags) : null,
             priority: priority || 'medium',
             userId: userId,
-            status: 'in_progress'
-        }
+            status: 'draft'
+        },
+        include: previewInclude
     });
 
-    return reply.success(note);
+    return reply.success(formatNote(note));
 };
 
 export const getNotes = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -68,14 +92,20 @@ export const getNotes = async (request: FastifyRequest, reply: FastifyReply) => 
     // Spec AN-1 dictates returning total along with items
     const [total, items] = await Promise.all([
         prisma.note.count({ where }),
-        prisma.note.findMany({ skip, take, where, orderBy })
+        prisma.note.findMany({
+            skip,
+            take,
+            where,
+            orderBy,
+            include: previewInclude
+        })
     ]);
 
     return reply.success({
         total,
         page: Number(page),
         limit: Number(limit),
-        items
+        items: items.map(formatNote)
     });
 };
 
@@ -113,7 +143,7 @@ export const getNoteById = async (request: FastifyRequest<{ Params: { id: string
         return reply.error('Note not found', 404);
     }
 
-    return reply.success(note);
+    return reply.success(formatNote(note));
 };
 
 export const updateNoteStatus = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
@@ -134,11 +164,14 @@ export const updateNoteStatus = async (request: FastifyRequest<{ Params: { id: s
         const updateData: any = { status };
         if (status === 'completed') {
             updateData.completed_at = new Date();
+        } else if (status === 'in_progress' && previousStatus === 'draft') {
+            updateData.started_at = new Date();
         }
 
         const updatedNote = await tx.note.update({
             where: { id },
-            data: updateData
+            data: updateData,
+            include: previewInclude
         });
 
         await tx.activityLog.create({
@@ -153,7 +186,7 @@ export const updateNoteStatus = async (request: FastifyRequest<{ Params: { id: s
         return updatedNote;
     });
 
-    return reply.success(result, 'Status updated');
+    return reply.success(formatNote(result), 'Status updated');
 };
 
 export const updateNote = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
@@ -175,10 +208,11 @@ export const updateNote = async (request: FastifyRequest<{ Params: { id: string 
             priority,
             tags: tags !== undefined ? JSON.stringify(tags) : undefined,
             due_date: due_date ? new Date(due_date) : null,
-        }
+        },
+        include: previewInclude
     });
 
-    return reply.success(updated);
+    return reply.success(formatNote(updated));
 };
 
 export const restoreNote = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
@@ -192,7 +226,8 @@ export const restoreNote = async (request: FastifyRequest<{ Params: { id: string
 
     await prisma.note.update({
         where: { id },
-        data: { is_deleted: 0, status: 'in_progress' }
+        data: { is_deleted: 0, status: 'draft' },
+        include: previewInclude
     });
 
     return reply.success(null, 'Note restored to workspace');

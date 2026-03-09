@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Card, Row, Col, Statistic, Select, Typography, Spin } from 'antd';
+import { Layout, Card, Row, Col, Statistic, Select, Typography, Spin, Button } from 'antd';
 import {
     CheckCircleOutlined, FireOutlined, PauseCircleOutlined,
-    DeleteOutlined, RiseOutlined, AppstoreOutlined,
+    DeleteOutlined, RiseOutlined, AppstoreOutlined, LeftOutlined
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import * as statsApi from '../../api/stats';
@@ -135,6 +135,7 @@ const StatsPage: React.FC = () => {
                 height: 60,
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Button type="text" icon={<LeftOutlined />} onClick={() => window.location.href = '/'} />
                     <AppstoreOutlined style={{ fontSize: 20, color: '#6366f1' }} />
                     <Title level={5} style={{ margin: 0 }}>统计图表</Title>
                 </div>
@@ -161,7 +162,7 @@ const StatsPage: React.FC = () => {
                     ].map(item => (
                         <Col xs={24} sm={12} lg={6} xl={4} key={item.label} style={{ flex: '1 1 180px' }}>
                             <Card
-                                bordered={false}
+                                variant="borderless"
                                 style={{ borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
                                 styles={{ body: { padding: '20px 24px' } }}
                             >
@@ -169,7 +170,7 @@ const StatsPage: React.FC = () => {
                                     <Statistic
                                         title={<Text style={{ fontSize: 13, color: '#888' }}>{item.label}</Text>}
                                         value={item.value}
-                                        valueStyle={{ fontSize: 28, fontWeight: 700, color: item.color }}
+                                        styles={{ content: { fontSize: 28, fontWeight: 700, color: item.color } }}
                                     />
                                     <div style={{
                                         width: 48, height: 48, borderRadius: 14,
@@ -192,7 +193,7 @@ const StatsPage: React.FC = () => {
                         <Card
                             title={<span style={{ fontWeight: 700 }}>📈 完成趋势</span>}
                             extra={<Text type="secondary" style={{ fontSize: 12 }}>每日完成数量</Text>}
-                            bordered={false}
+                            variant="borderless"
                             style={{ borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
                         >
                             <ReactECharts
@@ -208,7 +209,7 @@ const StatsPage: React.FC = () => {
                         <Card
                             title={<span style={{ fontWeight: 700 }}>🎨 颜色分布</span>}
                             extra={<Text type="secondary" style={{ fontSize: 12 }}>按便签配色</Text>}
-                            bordered={false}
+                            variant="borderless"
                             style={{ borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', height: '100%' }}
                         >
                             {colorDist.length > 0 ? (
@@ -231,7 +232,7 @@ const StatsPage: React.FC = () => {
                     <Col xs={24}>
                         <Card
                             title={<span style={{ fontWeight: 700 }}>📊 状态分布</span>}
-                            bordered={false}
+                            variant="borderless"
                             style={{ borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
                         >
                             <ReactECharts

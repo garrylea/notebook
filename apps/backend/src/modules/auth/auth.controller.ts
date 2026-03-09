@@ -148,3 +148,21 @@ export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
     return reply.success(null, 'Logged out successfully');
 };
 
+export const getMe = async (request: FastifyRequest, reply: FastifyReply) => {
+    const userId = request.user?.id;
+    if (!userId) {
+        return reply.error('Unauthorized', 401);
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { id: userId }
+    });
+
+    if (!user || user.status === 0 || user.is_deleted === 1) {
+        return reply.error('User not found or disabled', 401);
+    }
+
+    const { password_hash, ...safeUser } = user;
+    return reply.success(safeUser);
+};
+

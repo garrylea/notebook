@@ -48,8 +48,8 @@ const CalendarPage: React.FC = () => {
     const notesByDate = useMemo(() => {
         const map = new Map<string, any[]>();
         for (const note of calNotes) {
-            if (!note.due_date) continue;
-            const d = dayjs(note.due_date).format('YYYY-MM-DD');
+            if (!note.created_at) continue;
+            const d = dayjs(note.created_at).format('YYYY-MM-DD');
             if (!map.has(d)) map.set(d, []);
             map.get(d)!.push(note);
         }
@@ -108,7 +108,7 @@ const CalendarPage: React.FC = () => {
     // Stats for header
     const todayStr = dayjs().format('YYYY-MM-DD');
     const overdueCount = calNotes.filter(n =>
-        dayjs(n.due_date).format('YYYY-MM-DD') < todayStr && n.status !== 'completed'
+        n.due_date && dayjs(n.due_date).format('YYYY-MM-DD') < todayStr && n.status !== 'completed'
     ).length;
     const todayCount = (notesByDate.get(todayStr) || []).length;
 
@@ -122,7 +122,8 @@ const CalendarPage: React.FC = () => {
             }}>
                 {/* Month navigation */}
                 <Space>
-                    <Button icon={<LeftOutlined />} type="text" onClick={handlePrevMonth} />
+                    <Button type="text" icon={<LeftOutlined />} onClick={() => window.location.href = '/'} style={{ marginRight: 8 }} />
+                    <Button icon={<LeftOutlined />} type="default" onClick={handlePrevMonth} />
                     <Title level={5} style={{ margin: 0, minWidth: 120, textAlign: 'center' }}>
                         {currentMonth.format('YYYY年 MM月')}
                     </Title>
@@ -229,7 +230,7 @@ const CalendarPage: React.FC = () => {
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                     <Badge status={COLOR_MAP[note.color] as any || 'default'} />
                                     <Text type="secondary" style={{ fontSize: 12 }}>
-                                        {dayjs(note.due_date).format('HH:mm 截止')}
+                                        {dayjs(note.created_at).format('HH:mm 创建')}
                                     </Text>
                                     {note.status === 'completed' && (
                                         <Tag color="success" style={{ fontSize: 11, borderRadius: 6 }}>已完成</Tag>

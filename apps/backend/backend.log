@@ -1,0 +1,617 @@
+[04:26:46 UTC] INFO: Server listening at http://0.0.0.0:3000
+[04:26:46 UTC] INFO: Server listening at http://localhost:3000
+[04:27:48 UTC] INFO: incoming request
+    reqId: "req-1"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 52341
+    }
+[04:27:48 UTC] INFO: incoming request
+    reqId: "req-2"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 52342
+    }
+[04:27:48 UTC] INFO: request completed
+    reqId: "req-2"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 51.232499999925494
+[04:27:48 UTC] INFO: incoming request
+    reqId: "req-3"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 52348
+    }
+[04:27:48 UTC] INFO: request completed
+    reqId: "req-3"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 1.290874999947846
+[04:27:48 UTC] INFO: request completed
+    reqId: "req-1"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 82.3330830000341
+[04:27:48 UTC] INFO: incoming request
+    reqId: "req-4"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 52350
+    }
+[04:27:48 UTC] INFO: request completed
+    reqId: "req-4"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 5.490667000412941
+[04:27:52 UTC] INFO: incoming request
+    reqId: "req-5"
+    req: {
+      "method": "DELETE",
+      "url": "/api/v1/notes/f50b4fed-d786-464f-9e3c-96bdc90cb7e2",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 52679
+    }
+[04:27:52 UTC] INFO: request completed
+    reqId: "req-5"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 16.245707999914885
+[04:27:54 UTC] INFO: incoming request
+    reqId: "req-6"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=deleted&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 52687
+    }
+[04:27:54 UTC] INFO: request completed
+    reqId: "req-6"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 9.839124999940395
+[04:29:28 UTC] INFO: incoming request
+    reqId: "req-7"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=history&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53520
+    }
+[04:29:28 UTC] INFO: request completed
+    reqId: "req-7"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 31.934625000692904
+[04:29:29 UTC] INFO: incoming request
+    reqId: "req-8"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=suspended&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53535
+    }
+[04:29:29 UTC] INFO: request completed
+    reqId: "req-8"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 5.363083000294864
+[04:29:30 UTC] INFO: incoming request
+    reqId: "req-9"
+    req: {
+      "method": "POST",
+      "url": "/api/v1/notes/8fb1175b-66e2-47ab-9d9f-045eba22cb69/restore",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53543
+    }
+[04:29:30 UTC] INFO: request completed
+    reqId: "req-9"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 22.547624999657273
+[04:29:32 UTC] INFO: incoming request
+    reqId: "req-a"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53557
+    }
+[04:29:32 UTC] INFO: request completed
+    reqId: "req-a"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 4.766334000043571
+[04:29:34 UTC] INFO: incoming request
+    reqId: "req-b"
+    req: {
+      "method": "PATCH",
+      "url": "/api/v1/notes/8fb1175b-66e2-47ab-9d9f-045eba22cb69/status",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53571
+    }
+[04:29:34 UTC] INFO: request completed
+    reqId: "req-b"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 22.25287500023842
+[04:29:40 UTC] INFO: incoming request
+    reqId: "req-c"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=deleted&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53622
+    }
+[04:29:40 UTC] INFO: request completed
+    reqId: "req-c"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 5.96100000012666
+[04:29:43 UTC] INFO: incoming request
+    reqId: "req-d"
+    req: {
+      "method": "PATCH",
+      "url": "/api/v1/notes/f50b4fed-d786-464f-9e3c-96bdc90cb7e2/status",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53644
+    }
+[04:29:43 UTC] INFO: request completed
+    reqId: "req-d"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 13.757249999791384
+[04:29:44 UTC] INFO: incoming request
+    reqId: "req-e"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=history&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53653
+    }
+[04:29:44 UTC] INFO: request completed
+    reqId: "req-e"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 5.601541000418365
+[04:29:46 UTC] INFO: incoming request
+    reqId: "req-f"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=suspended&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53668
+    }
+[04:29:46 UTC] INFO: request completed
+    reqId: "req-f"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 3.4567919997498393
+[04:29:47 UTC] INFO: incoming request
+    reqId: "req-g"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=history&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53677
+    }
+[04:29:47 UTC] INFO: request completed
+    reqId: "req-g"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 2.5454169996082783
+[04:29:47 UTC] INFO: incoming request
+    reqId: "req-h"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53679
+    }
+[04:29:47 UTC] INFO: request completed
+    reqId: "req-h"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 4.176707999780774
+[04:29:48 UTC] INFO: incoming request
+    reqId: "req-i"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=history&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53687
+    }
+[04:29:48 UTC] INFO: request completed
+    reqId: "req-i"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 3.4592920001596212
+[04:29:50 UTC] INFO: incoming request
+    reqId: "req-j"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=deleted&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53698
+    }
+[04:29:50 UTC] INFO: request completed
+    reqId: "req-j"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 6.208542000502348
+[04:29:52 UTC] INFO: incoming request
+    reqId: "req-k"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53730
+    }
+[04:29:52 UTC] INFO: incoming request
+    reqId: "req-l"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53732
+    }
+[04:29:52 UTC] INFO: request completed
+    reqId: "req-k"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 7.751709000207484
+[04:29:52 UTC] INFO: incoming request
+    reqId: "req-m"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53734
+    }
+[04:29:52 UTC] INFO: request completed
+    reqId: "req-m"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 1.9922080002725124
+[04:29:52 UTC] INFO: request completed
+    reqId: "req-l"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 23.511250000447035
+[04:29:52 UTC] INFO: incoming request
+    reqId: "req-n"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53736
+    }
+[04:29:52 UTC] INFO: request completed
+    reqId: "req-n"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 3.7902089999988675
+[04:29:54 UTC] INFO: incoming request
+    reqId: "req-o"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/stats/overview",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53761
+    }
+[04:29:54 UTC] INFO: incoming request
+    reqId: "req-p"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/stats/trend?period=week",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53762
+    }
+[04:29:54 UTC] INFO: incoming request
+    reqId: "req-q"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/stats/color-distribution",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53763
+    }
+[04:29:54 UTC] INFO: request completed
+    reqId: "req-q"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 2.63279200065881
+[04:29:54 UTC] INFO: request completed
+    reqId: "req-o"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 9.76575000025332
+[04:29:54 UTC] INFO: incoming request
+    reqId: "req-r"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/stats/color-distribution",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53766
+    }
+[04:29:54 UTC] INFO: request completed
+    reqId: "req-p"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 12.076709000393748
+[04:29:54 UTC] INFO: incoming request
+    reqId: "req-s"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/stats/overview",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53767
+    }
+[04:29:54 UTC] INFO: incoming request
+    reqId: "req-t"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/stats/trend?period=week",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53769
+    }
+[04:29:54 UTC] INFO: request completed
+    reqId: "req-r"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 6.355125000700355
+[04:29:54 UTC] INFO: request completed
+    reqId: "req-s"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 5.242957999929786
+[04:29:54 UTC] INFO: request completed
+    reqId: "req-t"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 3.3427499998360872
+[04:30:01 UTC] INFO: incoming request
+    reqId: "req-u"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53832
+    }
+[04:30:01 UTC] INFO: incoming request
+    reqId: "req-v"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53833
+    }
+[04:30:01 UTC] INFO: request completed
+    reqId: "req-u"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 24.175290999934077
+[04:30:01 UTC] INFO: request completed
+    reqId: "req-v"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 23.075666000135243
+[04:30:01 UTC] INFO: incoming request
+    reqId: "req-w"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53835
+    }
+[04:30:01 UTC] INFO: request completed
+    reqId: "req-w"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 1.5594999995082617
+[04:30:01 UTC] INFO: incoming request
+    reqId: "req-x"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53837
+    }
+[04:30:01 UTC] INFO: request completed
+    reqId: "req-x"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 1.9605830004438758
+[04:30:02 UTC] INFO: incoming request
+    reqId: "req-y"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=deleted&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53852
+    }
+[04:30:02 UTC] INFO: request completed
+    reqId: "req-y"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 3.99883299972862
+[04:30:04 UTC] INFO: incoming request
+    reqId: "req-z"
+    req: {
+      "method": "POST",
+      "url": "/api/v1/notes/f50b4fed-d786-464f-9e3c-96bdc90cb7e2/restore",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53873
+    }
+[04:30:04 UTC] INFO: request completed
+    reqId: "req-z"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 13.174042000435293
+[04:30:06 UTC] INFO: incoming request
+    reqId: "req-10"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/notes?status=active&limit=10&sort_by=priority_desc,created_at_desc&page=1",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53894
+    }
+[04:30:06 UTC] INFO: request completed
+    reqId: "req-10"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 8.333624999970198
+[04:30:08 UTC] INFO: incoming request
+    reqId: "req-11"
+    req: {
+      "method": "PATCH",
+      "url": "/api/v1/notes/f50b4fed-d786-464f-9e3c-96bdc90cb7e2/status",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 53914
+    }
+[04:30:08 UTC] INFO: request completed
+    reqId: "req-11"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 14.703958000056446
+[04:30:24 UTC] INFO: incoming request
+    reqId: "req-12"
+    req: {
+      "method": "GET",
+      "url": "/uploads/1d0e6e70-46e3-46df-b231-71101af60b62/f50b4fed-d786-464f-9e3c-96bdc90cb7e2/c4219c3e-f14a-4a61-b974-a92798bd8d04_2025%E5%8C%97%E4%BA%AC%E6%B5%B7%E6%B7%80%E5%88%9D%E4%BA%8C%EF%BC%88%E4%B8%8B%EF%BC%89%E6%9C%9F%E6%9C%AB%E6%95%B0%E5%AD%A6.pdf",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 54057
+    }
+[04:30:25 UTC] INFO: request completed
+    reqId: "req-12"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 27.124374999664724
+[04:30:29 UTC] INFO: incoming request
+    reqId: "req-13"
+    req: {
+      "method": "GET",
+      "url": "/uploads/1d0e6e70-46e3-46df-b231-71101af60b62/f50b4fed-d786-464f-9e3c-96bdc90cb7e2/f1179833-cd13-4849-b529-28c3302b8a51_Gemini_Generated_Image_34yp8234yp8234yp.png",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 54097
+    }
+[04:30:29 UTC] INFO: request completed
+    reqId: "req-13"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 15.58941699936986
+[04:30:32 UTC] INFO: incoming request
+    reqId: "req-14"
+    req: {
+      "method": "GET",
+      "url": "/uploads/1d0e6e70-46e3-46df-b231-71101af60b62/f50b4fed-d786-464f-9e3c-96bdc90cb7e2/a9366e18-b29b-4fdc-8ab3-41b5093e1059_test.mp4",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 54112
+    }
+[04:30:32 UTC] INFO: request completed
+    reqId: "req-14"
+    res: {
+      "statusCode": 206
+    }
+    responseTime: 16.55304200015962
+[04:31:17 UTC] INFO: incoming request
+    reqId: "req-15"
+    req: {
+      "method": "POST",
+      "url": "/api/v1/auth/logout",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 54449
+    }
+[04:31:17 UTC] INFO: request completed
+    reqId: "req-15"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 3.9893749998882413

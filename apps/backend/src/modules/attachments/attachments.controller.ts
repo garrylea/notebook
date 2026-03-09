@@ -6,6 +6,7 @@ import prisma from '../../utils/prisma';
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
 const CHUNK_DIR = path.join(UPLOADS_DIR, '.tmp');
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_SIZE_MB) || 500;
 
 const ensureDirs = async () => {
     await fs.mkdir(UPLOADS_DIR, { recursive: true });
@@ -31,8 +32,8 @@ export const uploadSub5M = async (request: FastifyRequest<{ Params: { noteId: st
     const buffer = await data.toBuffer();
 
     // File size guard
-    if (buffer.length > 5 * 1024 * 1024) {
-        return reply.error('File size exceeds 5MB limit format. Please use chunked upload.', 400);
+    if (buffer.length > MAX_UPLOAD_MB * 1024 * 1024) {
+        return reply.error(`File size exceeds ${MAX_UPLOAD_MB}MB limit format. Please use chunked upload.`, 400);
     }
 
     const hash = crypto.createHash('md5').update(buffer).digest('hex');

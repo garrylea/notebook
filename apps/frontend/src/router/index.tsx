@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import Login from '../pages/Auth/Login';
+import Register from '../pages/Auth/Register';
 import Dashboard from '../pages/Dashboard/Dashboard';
 
 // Heavy pages — loaded only when the user navigates to them
@@ -52,7 +53,7 @@ const router = createBrowserRouter([
     },
     {
         path: '/register',
-        element: <Login />,
+        element: <Register />,
     }
 ]);
 

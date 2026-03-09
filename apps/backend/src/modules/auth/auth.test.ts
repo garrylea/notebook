@@ -33,6 +33,7 @@ describe('Auth Module', () => {
                 updated_at: new Date('2026-03-01T09:00:00Z'),
                 is_deleted: 0,
                 password_hash: 'hashedpassword',
+                preferences: null,
             };
 
             vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
@@ -65,6 +66,7 @@ describe('Auth Module', () => {
                 password_hash: await bcrypt.hash('TestPassword123', 1),
                 avatar_url: null,
                 status: 1,
+                preferences: null,
             };
 
             vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);

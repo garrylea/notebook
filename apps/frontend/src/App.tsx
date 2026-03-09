@@ -1,5 +1,5 @@
 import React from 'react';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App as AntdApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 
 interface Props {
@@ -19,7 +19,9 @@ const App: React.FC<Props> = ({ children }) => {
         algorithm: theme.defaultAlgorithm,
       }}
     >
-      {children}
+      <AntdApp>
+        {children}
+      </AntdApp>
     </ConfigProvider>
   );
 };

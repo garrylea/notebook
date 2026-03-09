@@ -7,7 +7,7 @@ import {
     AppstoreOutlined, HistoryOutlined, PauseCircleOutlined,
     CalendarOutlined, BarChartOutlined, DeleteOutlined,
     PlusOutlined, SearchOutlined, UserOutlined, LogoutOutlined,
-    FilterOutlined, SettingOutlined,
+    FilterOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useNoteStore } from '../../store/noteStore';
@@ -15,7 +15,7 @@ import { useAppStore } from '../../store';
 import NoteCard from '../../components/NoteCard/NoteCard';
 import NoteDrawer from '../../components/NoteDrawer/NoteDrawer';
 import * as notesApi from '../../api/notes';
-import { logout } from '../../api/auth';
+import { logout, getMe } from '../../api/auth';
 import type { Note } from '../../api/notes';
 
 const { Sider, Content, Header } = Layout;
@@ -51,6 +51,17 @@ const Dashboard: React.FC = () => {
     const [keyword, setKeyword] = useState('');
 
     useEffect(() => {
+        const syncUser = async () => {
+            if (localStorage.getItem('accessToken')) {
+                try {
+                    const data = await getMe();
+                    setUser(data);
+                } catch (e) {
+                    // Ignore fail, might be expired token handled elsewhere
+                }
+            }
+        };
+        syncUser();
         fetchNotes(true);
     }, []);
 
@@ -76,9 +87,14 @@ const Dashboard: React.FC = () => {
     };
 
     const handleStatusAction = async (noteId: string, status: string) => {
-        await notesApi.updateNoteStatus(noteId, status);
-        removeNoteById(noteId);
-        message.success(status === 'completed' ? '已完成 ✅' : status === 'suspended' ? '已挂起 ⏸' : '已删除 🗑');
+        const res = await notesApi.updateNoteStatus(noteId, status);
+        if (activeSection === 'active' && status === 'in_progress') {
+            updateNoteInList(res);
+            message.success('任务已开始 🚀');
+        } else {
+            removeNoteById(noteId);
+            message.success(status === 'completed' ? '已完成 ✅' : status === 'suspended' ? '已挂起 ⏸' : '已删除 🗑');
+        }
     };
 
     const handleDelete = async (noteId: string) => {
@@ -197,7 +213,7 @@ const Dashboard: React.FC = () => {
 
                 {/* User info at bottom */}
                 <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    position: 'absolute', bottom: 48, left: 0, right: 0,
                     padding: siderCollapsed ? '14px 0' : '14px 16px',
                     borderTop: '1px solid rgba(255,255,255,0.08)',
                     display: 'flex', alignItems: 'center', justifyContent: siderCollapsed ? 'center' : 'space-between',
@@ -209,16 +225,22 @@ const Dashboard: React.FC = () => {
                                 icon={<UserOutlined />}
                                 size={30}
                             />
-                            {!siderCollapsed && user && (
+                            {!siderCollapsed && (
                                 <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-                                    {user.username}
+                                    {user?.username || '我'}
                                 </Text>
                             )}
                         </div>
                     </Dropdown>
+
                     {!siderCollapsed && (
-                        <Tooltip title="设置">
-                            <Button type="text" icon={<SettingOutlined />} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                        <Tooltip title="退出登录">
+                            <Button
+                                type="text"
+                                icon={<LogoutOutlined />}
+                                onClick={handleLogout}
+                                style={{ color: 'rgba(255,100,100,0.7)' }}
+                            />
                         </Tooltip>
                     )}
                 </div>
@@ -301,8 +323,8 @@ const Dashboard: React.FC = () => {
                                         <NoteCard
                                             key={note.id}
                                             note={note}
-                                            isHistory={activeSection === 'history' || activeSection === 'deleted'}
                                             onClick={() => handleCardClick(note.id)}
+                                            onStart={() => handleStatusAction(note.id, 'in_progress')}
                                             onComplete={() => handleStatusAction(note.id, 'completed')}
                                             onSuspend={() => handleStatusAction(note.id, 'suspended')}
                                             onDelete={() => handleDelete(note.id)}
@@ -315,9 +337,8 @@ const Dashboard: React.FC = () => {
                                         <NoteCard
                                             key={note.id}
                                             note={note}
-                                            isHistory={activeSection === 'history' || activeSection === 'deleted'}
                                             onClick={() => handleCardClick(note.id)}
-                                            onComplete={() => handleStatusAction(note.id, 'completed')}
+                                            onStart={() => handleStatusAction(note.id, 'in_progress')}
                                             onSuspend={() => handleStatusAction(note.id, 'suspended')}
                                             onDelete={() => handleDelete(note.id)}
                                             onRestore={() => handleRestore(note.id)}
