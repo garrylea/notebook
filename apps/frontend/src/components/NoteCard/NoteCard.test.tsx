@@ -11,6 +11,7 @@ describe('NoteCard Component', () => {
         color: 'blue',
         priority: 'high',
         status: 'in_progress',
+        is_deleted: 0,
         created_at: '2026-03-01T00:00:00.000Z',
         updated_at: '2026-03-01T00:00:00.000Z',
         pin_top: 0,

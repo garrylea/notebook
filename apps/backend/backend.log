@@ -615,3 +615,18 @@
       "statusCode": 200
     }
     responseTime: 3.9893749998882413
+[05:53:16 UTC] INFO: incoming request
+    reqId: "req-16"
+    req: {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "hostname": "localhost:3000",
+      "remoteAddress": "127.0.0.1",
+      "remotePort": 61761
+    }
+[05:53:16 UTC] INFO: request completed
+    reqId: "req-16"
+    res: {
+      "statusCode": 401
+    }
+    responseTime: 4.71195799857378
