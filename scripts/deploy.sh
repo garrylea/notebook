@@ -7,6 +7,38 @@ echo "========================================="
 echo "  🚀 Smart Notepad Automated Deployment  "
 echo "========================================="
 
+# Check for stop command
+if [ "$1" == "stop" ]; then
+    echo "🛑 正在停止 Smart Notepad 服务..."
+    
+    # Stop backend process
+    if pm2 describe "smart-notepad-api" &> /dev/null; then
+        echo "   👉 停止后端 API 服务..."
+        pm2 stop "smart-notepad-api"
+        pm2 delete "smart-notepad-api"
+    else
+        echo "   ✅ 后端 API 服务未运行"
+    fi
+    
+    # Stop frontend process if running
+    if pm2 describe "smart-notepad-web" &> /dev/null; then
+        echo "   👉 停止前端 Web 服务..."
+        pm2 stop "smart-notepad-web"
+        pm2 delete "smart-notepad-web"
+    else
+        echo "   ✅ 前端 Web 服务未运行"
+    fi
+    
+    # Save PM2 process list
+    pm2 save
+    
+    echo ""
+    echo "========================================="
+    echo "✅ Smart Notepad 服务已停止！"
+    echo "========================================="
+    exit 0
+fi
+
 # 1. Check for .env file
 if [ ! -f ".env" ]; then
     echo "⚠️  未找到 .env 配置文件，正在自动从 .env.example 复制..."
@@ -123,6 +155,31 @@ else
     HOST_METHOD="手动托管 (静态资源已就绪)"
 fi
 
+# 8. Configure PM2 auto-start on system boot
+echo ""
+echo "========================================="
+echo "  🔄 配置 PM2 开机自启"
+echo "========================================="
+
+# Check if PM2 startup has already been configured
+if [ ! -f "$HOME/Library/LaunchAgents/pm2.$(whoami).plist" ] 2>/dev/null; then
+    echo "📋 正在生成 PM2 开机自启配置命令..."
+    echo ""
+    echo "======================================"
+    pm2 startup || true
+    echo "======================================"
+    echo ""
+    echo "⚠️  请执行上面显示的 sudo 命令以完成开机自启配置！"
+    echo ""
+    echo "配置完成后，系统重启后前后端服务将自动启动。"
+else
+    echo "✅ PM2 开机自启已经配置过，跳过。"
+fi
+
+# Final save to ensure all processes are registered
+pm2 save
+
+echo ""
 echo "========================================="
 echo "🎉 部署脚本执行彻底完成！"
 echo ""
@@ -136,4 +193,5 @@ echo "      访问目录: $(pwd)/apps/frontend/dist"
 echo "      API 指向: ${VITE_API_PROXY_TARGET:-http://localhost:3000}"
 echo ""
 echo "  👉 可使用 \`pm2 status\` 查看常驻后台进程状态。"
+echo "  👉 可使用 \`./deploy.sh stop\` 停止所有服务。"
 echo "========================================="

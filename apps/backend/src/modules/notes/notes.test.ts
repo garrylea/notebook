@@ -118,12 +118,11 @@ describe('Notes Module', () => {
 
     describe('PATCH /notes/:id/status', () => {
         it('should update note status and attach an activity log', async () => {
-            vi.mocked(prisma.note.findUnique).mockResolvedValue({ id: 'note-1', userId: mockUserId } as any);
+            vi.mocked(prisma.note.findUnique).mockResolvedValue({ id: 'note-1', userId: mockUserId, status: 'in_progress' } as any);
             vi.mocked(prisma.$transaction).mockImplementation(async (cb) => {
-                // simple mock implementation of transaction execution
                 return cb(prisma);
             });
-            vi.mocked(prisma.note.update).mockResolvedValue({ status: 'completed' } as any);
+            vi.mocked(prisma.note.update).mockResolvedValue({ id: 'note-1', status: 'completed', tags: null } as any);
             vi.mocked(prisma.activityLog.create).mockResolvedValue({ id: 1 } as any);
 
             const response = await app.inject({
@@ -142,6 +141,28 @@ describe('Notes Module', () => {
                 where: { id: 'note-1' },
                 data: expect.objectContaining({ status: 'completed' })
             }));
+        });
+
+        it('reproduction: should complete a note that is in_progress', async () => {
+            vi.mocked(prisma.note.findUnique).mockResolvedValue({ id: 'note-repro', userId: mockUserId, status: 'in_progress', tags: null } as any);
+            vi.mocked(prisma.$transaction).mockImplementation(async (cb) => {
+                return cb(prisma);
+            });
+            vi.mocked(prisma.note.update).mockResolvedValue({ id: 'note-repro', status: 'completed', tags: null, userId: mockUserId } as any);
+            vi.mocked(prisma.activityLog.create).mockResolvedValue({ id: 1 } as any);
+
+            const response = await app.inject({
+                method: 'PATCH',
+                url: '/api/v1/notes/note-repro/status',
+                headers: { authorization: `Bearer ${token}` },
+                payload: {
+                    status: 'completed'
+                }
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = response.json();
+            expect(body.data.status).toBe('completed');
         });
     });
 

@@ -7,15 +7,17 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
+    "dev": "dotenv -- concurrently \"npm run dev --workspace=apps/backend\" \"npm run dev --workspace=apps/frontend\"",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "prepare": "husky install"
   },
   "devDependencies": {
-    "husky": "^8.0.3",
     "@commitlint/cli": "^19.0.0",
-    "@commitlint/config-conventional": "^19.0.0"
+    "@commitlint/config-conventional": "^19.0.0",
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0",
+    "husky": "^8.0.3"
   }
 }

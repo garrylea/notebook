@@ -1,5 +1,32 @@
 import request from './request';
 
+export interface Subtask {
+    id: string;
+    note_id?: string;
+    parent_id?: string | null;
+    title: string;
+    status: string;
+    is_completed: boolean;
+    sort_order: number;
+    due_date?: string | null;
+    assignee?: string | null;
+    completed_at?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Attachment {
+    id: string;
+    note_id?: string;
+    file_name: string;
+    file_size: number;
+    file_type: string;
+    file_path: string;
+    md5_hash?: string | null;
+    is_deleted?: number;
+    created_at: string;
+}
+
 export interface Note {
     id: string;
     title: string;
@@ -12,8 +39,8 @@ export interface Note {
     pin_top: number;
     subtask_total?: number;
     subtask_completed?: number;
-    subtasks?: any[];
-    attachments?: any[];
+    subtasks?: Subtask[];
+    attachments?: Attachment[];
     has_attachments?: boolean;
     started_at?: string;
     completed_at?: string;

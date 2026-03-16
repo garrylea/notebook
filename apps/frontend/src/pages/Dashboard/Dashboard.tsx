@@ -88,12 +88,20 @@ const Dashboard: React.FC = () => {
 
     const handleStatusAction = async (noteId: string, status: string) => {
         const res = await notesApi.updateNoteStatus(noteId, status);
-        if (activeSection === 'active' && status === 'in_progress') {
-            updateNoteInList(res);
+
+        // 先更新 note 对象的状态，确保 UI 能够及时响应
+        updateNoteInList(res);
+
+        // 显示成功消息
+        if (status === 'in_progress') {
             message.success('任务已开始 🚀');
-        } else {
-            removeNoteById(noteId);
-            message.success(status === 'completed' ? '已完成 ✅' : status === 'suspended' ? '已挂起 ⏸' : '已删除 🗑');
+        } else if (status === 'completed') {
+            message.success('已完成 ✅');
+            // 完成的任务从 active 视图移除
+            setTimeout(() => removeNoteById(noteId), 300);
+        } else if (status === 'suspended') {
+            message.success('已挂起');
+            setTimeout(() => removeNoteById(noteId), 300);
         }
     };
 
@@ -339,6 +347,7 @@ const Dashboard: React.FC = () => {
                                             note={note}
                                             onClick={() => handleCardClick(note.id)}
                                             onStart={() => handleStatusAction(note.id, 'in_progress')}
+                                            onComplete={() => handleStatusAction(note.id, 'completed')}
                                             onSuspend={() => handleStatusAction(note.id, 'suspended')}
                                             onDelete={() => handleDelete(note.id)}
                                             onRestore={() => handleRestore(note.id)}

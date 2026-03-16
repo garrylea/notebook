@@ -29,10 +29,42 @@ describe('NoteCard Component', () => {
         const noteWithSubtasks = {
             ...mockNote,
             subtasks: [
-                { id: '1', title: 'Task A', is_completed: true },
-                { id: '2', title: 'Task B', is_completed: false },
-                { id: '3', title: 'Task C', is_completed: false },
-                { id: '4', title: 'Task D', is_completed: false },
+                {
+                    id: '1',
+                    title: 'Task A',
+                    is_completed: true,
+                    status: 'completed',
+                    sort_order: 1,
+                    created_at: '2024-01-01T00:00:00Z',
+                    updated_at: '2024-01-01T00:00:00Z'
+                },
+                {
+                    id: '2',
+                    title: 'Task B',
+                    is_completed: false,
+                    status: 'pending',
+                    sort_order: 2,
+                    created_at: '2024-01-01T00:00:00Z',
+                    updated_at: '2024-01-01T00:00:00Z'
+                },
+                {
+                    id: '3',
+                    title: 'Task C',
+                    is_completed: false,
+                    status: 'pending',
+                    sort_order: 3,
+                    created_at: '2024-01-01T00:00:00Z',
+                    updated_at: '2024-01-01T00:00:00Z'
+                },
+                {
+                    id: '4',
+                    title: 'Task D',
+                    is_completed: false,
+                    status: 'pending',
+                    sort_order: 4,
+                    created_at: '2024-01-01T00:00:00Z',
+                    updated_at: '2024-01-01T00:00:00Z'
+                },
             ]
         };
         render(<NoteCard note={noteWithSubtasks} onClick={() => { }} />);

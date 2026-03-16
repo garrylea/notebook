@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Drawer, Form, Input, Select, DatePicker, Button, Divider,
     Checkbox, Tooltip, Space, Upload, Typography, Spin, message, Modal
 } from 'antd';
-import type { UploadFile } from 'antd/es/upload/interface';
+import type { UploadFile, RcFile } from 'antd/es/upload/interface';
 import {
     PlusOutlined, DeleteOutlined, SaveOutlined, UploadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import type { Note } from '../../api/notes';
+import type { Note, Subtask, Attachment } from '../../api/notes';
 import * as notesApi from '../../api/notes';
 import request from '../../api/request';
 
@@ -50,7 +50,7 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
-    const [subtasks, setSubtasks] = useState<any[]>([]);
+    const [subtasks, setSubtasks] = useState<Subtask[]>([]);
     const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
     const [previewMode, setPreviewMode] = useState(false);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -59,6 +59,45 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
     const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | 'pdf' | 'other'>('other');
     const contentRef = React.useRef<HTMLDivElement>(null);
     const isNew = !noteId;
+
+    // Handle paste event for file uploads
+    const handlePaste = useCallback((event: ClipboardEvent) => {
+        const items = event.clipboardData?.items;
+        if (!items) return;
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                if (file) {
+                    const rcFile = {
+                        ...file,
+                        uid: `paste-${Date.now()}-${i}`,
+                        lastModifiedDate: new Date(),
+                    } as RcFile;
+
+                    const uploadFile: UploadFile = {
+                        uid: rcFile.uid,
+                        name: rcFile.name,
+                        status: 'done',
+                        originFileObj: rcFile,
+                        size: rcFile.size,
+                    };
+                    setFileList(prev => [...prev, uploadFile]);
+                    setDirty(true);
+                    message.success(`已添加文件: ${file.name}`);
+                }
+            }
+        }
+    }, []);
+
+    // Add paste event listener
+    useEffect(() => {
+        if (open) {
+            document.addEventListener('paste', handlePaste);
+            return () => document.removeEventListener('paste', handlePaste);
+        }
+    }, [open, handlePaste]);
 
     // Load note details when opening
     useEffect(() => {
@@ -73,10 +112,10 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
             return;
         }
         setLoading(true);
-        notesApi.getNoteById(noteId!).then(data => {
-            setNote(data as any);
-            setSubtasks((data as any).subtasks || []);
-            setFileList(((data as any).attachments || []).map((att: any) => ({
+        notesApi.getNoteById(noteId!).then((data: Note) => {
+            setNote(data);
+            setSubtasks(data.subtasks || []);
+            setFileList((data.attachments || []).map((att: Attachment) => ({
                 uid: att.id,
                 name: att.file_name,
                 status: 'done',
@@ -93,21 +132,22 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
             });
             setDirty(false);
         }).finally(() => setLoading(false));
-    }, [open, noteId]);
+    }, [open, noteId, isNew, form]);
+
+    const contentValue = Form.useWatch('content', form);
 
     useEffect(() => {
-        if (previewMode && contentRef.current) {
-            renderMathInElement(contentRef.current, {
-                delimiters: [
-                    { left: '$$', right: '$$', display: true },
-                    { left: '$', right: '$', display: false },
-                    { left: '\\(', right: '\\)', display: false },
-                    { left: '\\[', right: '\\]', display: true }
-                ],
-                throwOnError: false
-            });
-        }
-    }, [previewMode, form.getFieldValue('content')]);
+        if (!previewMode || !contentRef.current) return;
+        renderMathInElement(contentRef.current, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false },
+                { left: '\\(', right: '\\)', display: false },
+                { left: '\\[', right: '\\]', display: true }
+            ],
+            throwOnError: false
+        });
+    }, [previewMode, contentValue]);
 
     const handleSave = async () => {
         try {
@@ -121,16 +161,53 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
             let saved: Note;
             if (isNew) {
                 saved = await notesApi.createNote(payload);
+                // If there are attachments to upload, upload them after creating the note
+                if (fileList.length > 0) {
+                    await uploadAttachments(saved.id);
+                }
             } else {
                 saved = await notesApi.updateNote(noteId!, payload);
             }
             onSaved(saved);
             setDirty(false);
             onClose();
-        } catch (e) {
+        } catch (error) {
             // validation error caught by antd
+            console.error('Save failed:', error);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const uploadAttachments = async (noteId: string) => {
+        const filesToUpload = fileList.filter(f => f.originFileObj && !f.url);
+        if (filesToUpload.length === 0) return;
+
+        try {
+            for (const file of filesToUpload) {
+                if (file.originFileObj) {
+                    const formData = new FormData();
+                    formData.append('file', file.originFileObj);
+                    await request.post(`/v1/notes/${noteId}/attachments`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    });
+                }
+            }
+            message.success('附件上传成功！');
+            // Refresh the note to get updated attachments
+            const updatedNote = await notesApi.getNoteById(noteId) as Note;
+            setFileList(updatedNote.attachments?.map((att: Attachment) => ({
+                uid: att.id,
+                name: att.file_name,
+                status: 'done',
+                url: att.file_path,
+                size: att.file_size
+            })) || []);
+        } catch {
+            message.error('附件上传失败，请稍后重试。');
         }
     };
 
@@ -147,12 +224,12 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
 
     const handleAddSubtask = async () => {
         if (!newSubtaskTitle.trim() || !note) return;
-        const result: any = await request.post(`/v1/notes/${note.id}/subtasks`, { title: newSubtaskTitle });
+        const result: Subtask = await request.post(`/v1/notes/${note.id}/subtasks`, { title: newSubtaskTitle });
         setSubtasks(prev => [...prev, result]);
         setNewSubtaskTitle('');
     };
 
-    const handleToggleSubtask = async (subtask: any) => {
+    const handleToggleSubtask = async (subtask: Subtask) => {
         if (!note) return;
         const newStatus = subtask.is_completed ? 'pending' : 'completed';
         await request.put(`/v1/notes/${note.id}/subtasks/${subtask.id}`, { status: newStatus });
@@ -277,7 +354,7 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
                             </Text>
                         </Divider>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            {subtasks.map((item: any) => (
+                            {subtasks.map((item: Subtask) => (
                                 <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
                                     <Checkbox
                                         checked={item.is_completed}
@@ -314,84 +391,96 @@ const NoteDrawer: React.FC<NoteDrawerProps> = ({ open, noteId, onClose, onSaved 
                                 添加
                             </Button>
                         </div>
-
-                        {/* Attachments */}
-                        <Divider plain style={{ margin: '16px 0' }}>
-                            <Text strong>附件</Text>
-                        </Divider>
-                        <Upload.Dragger
-                            name="file"
-                            action={`/api/v1/notes/${note.id}/attachments`}
-                            headers={{ Authorization: `Bearer ${localStorage.getItem('accessToken')}` }}
-                            multiple
-                            fileList={fileList}
-                            onChange={info => {
-                                setFileList(info.fileList);
-                                if (info.file.status === 'done') {
-                                    message.success(`${info.file.name} 上传成功！`);
-                                    // Update the file list item with the server URL if returned
-                                    if (info.file.response && info.file.response.data && info.file.response.data[0]) {
-                                        const updated = info.fileList.map(f => {
-                                            if (f.uid === info.file.uid) {
-                                                return { ...f, url: info.file.response.data[0].file_path };
-                                            }
-                                            return f;
-                                        });
-                                        setFileList(updated);
-                                    }
-                                } else if (info.file.status === 'error') {
-                                    message.error(`${info.file.name} 上传失败。`);
-                                }
-                            }}
-                            onRemove={async (file) => {
-                                try {
-                                    // Try to delete from server if it has a real UID
-                                    if (!file.uid.startsWith('rc-upload')) {
-                                        await request.delete(`/v1/notes/${note.id}/attachments/${file.uid}`);
-                                        message.success('附件已删除');
-                                    }
-                                    return true;
-                                } catch (e) {
-                                    message.error('删除附件失败');
-                                    return false;
-                                }
-                            }}
-                            onPreview={(file) => {
-                                if (!file.url) return;
-                                const ext = file.url.split('.').pop()?.toLowerCase() || '';
-                                let type: 'image' | 'video' | 'audio' | 'pdf' | 'other' = 'other';
-                                if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) type = 'image';
-                                else if (['mp4', 'webm', 'mov'].includes(ext)) type = 'video';
-                                else if (['mp3', 'wav', 'ogg'].includes(ext)) type = 'audio';
-                                else if (['pdf'].includes(ext)) type = 'pdf';
-
-                                if (type !== 'other') {
-                                    setPreviewType(type);
-                                    setPreviewImage(file.url);
-                                    setPreviewOpen(true);
-                                } else {
-                                    // Fallback open in new tab (e.g. for docx etc)
-                                    window.open(file.url, '_blank');
-                                }
-                            }}
-                            style={{ borderRadius: 10, padding: '12px 0' }}
-                        >
-                            <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                            <p>拖拽文件到此处 或 点击上传</p>
-                            <p><Text type="secondary" style={{ fontSize: 12 }}>≥ 500MB 自动切换分块上传</Text></p>
-                        </Upload.Dragger>
                     </>
-                ) : (
-                    <>
-                        <Divider plain style={{ margin: '16px 0' }}>
-                            <Text strong>扩展功能</Text>
-                        </Divider>
-                        <div style={{ textAlign: 'center', padding: '30px 20px', color: '#8c8c8c', background: '#fafafa', borderRadius: 8, border: '1px dashed #e8e8e8' }}>
-                            💡 请先点击右上角「保存」新便签。<br />
-                            保存成功后，即可在此处折腾<b>子任务清单</b>和上传<b>超大附件</b>！
-                        </div>
-                    </>
-                )}
+                ) : null}
+
+                {/* Attachments */}
+                <Divider plain style={{ margin: '16px 0' }}>
+                    <Text strong>附件</Text>
+                </Divider>
+                <Upload.Dragger
+                    name="file"
+                    multiple
+                    fileList={fileList}
+                    customRequest={({ file, onSuccess, onError }) => {
+                        // For existing notes, upload immediately
+                        if (note) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            request.post(`/v1/notes/${note.id}/attachments`, formData, {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                }
+                            }).then(response => {
+                                onSuccess?.(response);
+                            }).catch(error => {
+                                onError?.(error);
+                            });
+                        } else {
+                            // For new notes, just mark as done (will upload after save)
+                            onSuccess?.({});
+                        }
+                    }}
+                    onChange={info => {
+                        setFileList(info.fileList);
+                        if (info.file.status === 'done') {
+                            if (note) {
+                                message.success(`${info.file.name} 上传成功！`);
+                                // Update the file list item with the server URL if returned
+                                if (info.file.response && info.file.response.data && info.file.response.data[0]) {
+                                    const updated = info.fileList.map(f => {
+                                        if (f.uid === info.file.uid) {
+                                            return { ...f, url: info.file.response.data[0].file_path };
+                                        }
+                                        return f;
+                                    });
+                                    setFileList(updated);
+                                }
+                            }
+                        } else if (info.file.status === 'error') {
+                            if (note) {
+                                message.error(`${info.file.name} 上传失败。`);
+                            }
+                        }
+                    }}
+                    onRemove={async (file) => {
+                        try {
+                            // Try to delete from server if it has a real UID and note exists
+                            if (!file.uid.startsWith('rc-upload') && !file.uid.startsWith('paste-') && note) {
+                                await request.delete(`/v1/notes/${note.id}/attachments/${file.uid}`);
+                                message.success('附件已删除');
+                            }
+                            return true;
+                        } catch {
+                            message.error('删除附件失败');
+                            return false;
+                        }
+                    }}
+                    onPreview={(file) => {
+                        if (!file.url) return;
+                        const ext = file.url.split('.').pop()?.toLowerCase() || '';
+                        let type: 'image' | 'video' | 'audio' | 'pdf' | 'other' = 'other';
+                        if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) type = 'image';
+                        else if (['mp4', 'webm', 'mov'].includes(ext)) type = 'video';
+                        else if (['mp3', 'wav', 'ogg'].includes(ext)) type = 'audio';
+                        else if (['pdf'].includes(ext)) type = 'pdf';
+
+                        if (type !== 'other') {
+                            setPreviewType(type);
+                            setPreviewImage(file.url);
+                            setPreviewOpen(true);
+                        } else {
+                            // Fallback open in new tab (e.g. for docx etc)
+                            window.open(file.url, '_blank');
+                        }
+                    }}
+                    style={{ borderRadius: 10, padding: '12px 0' }}
+                >
+                    <p className="ant-upload-drag-icon"><UploadOutlined /></p>
+                    <p>拖拽文件到此处 或 点击上传</p>
+                    <p><Text type="secondary" style={{ fontSize: 12 }}>支持 Ctrl+V/Command+V 粘贴文件 | ≥ 500MB 自动切换分块上传</Text></p>
+                </Upload.Dragger>
             </Form>
 
             {/* Media Preview Modal */}
